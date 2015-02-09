@@ -9,7 +9,7 @@ SimpleCov.start
 require "codeclimate-test-reporter"
 CodeClimate::TestReporter.start
 
-require "gravelpile"
+require "logflume"
 require 'pry'
 
 

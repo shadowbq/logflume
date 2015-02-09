@@ -1,15 +1,15 @@
-module Gravelpile
-  class Pile
+module Logflume
+  class Flume
     attr_accessor :dir, :glob, :logger, :pipe, :pre_load, :interval, :blocking
 
     def initialize(opts = {})
-      @dir = opts[:dir] || './pile/'
+      @dir = opts[:dir] || './flume/'
       @glob = opts[:glob] || '*.log'
       @logger = opts[:logger] || Logger.new(STDOUT)
       @interval = opts[:interval] || 5.0
       @pre_load = opts[:pre_load] || false
       @blocking = opts[:blocking] || false
-      @pipe = opts[:pipe] || "/tmp/gravelpile.pipe.#{$$}"
+      @pipe = opts[:pipe] || "/tmp/logflume.pipe.#{$$}"
       @configured = false
     end
 
@@ -59,7 +59,7 @@ module Gravelpile
     end
 
     def route_pipe
-      raise PileNotLoaded unless configured?
+      raise FlumeNotLoaded unless configured?
       create_pipe
       hookup_pipe
     end
@@ -77,10 +77,11 @@ module Gravelpile
         args.each do |event| 
           
           if event.type == :added
-            root = File.dirname(__FILE__)
-            infile = File.join(root, event.path)
-            @logger.info "new File found => #{infile}"
-            File.open(infile).each_line do |line| 
+            #root = File.dirname(__FILE__)
+            #infile = File.join(root, event.path)
+            #@logger.info "new File found => #{infile}"
+            @logger.info "new File found => #{event.path}"
+            File.open(event.path).each_line do |line| 
               @pipe_handler.puts line
             end
           end
