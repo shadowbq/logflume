@@ -1,0 +1,15 @@
+language: ruby
+
+before_install: "gem install bundler"
+install:        "bundle install"
+
+script: "rake"
+
+rvm:
+  - 1.9.3
+  - 2.0.0
+  - 2.1.1
+  
+addons:
+  code_climate:
+    repo_token: e82f6223671511aa10f6fc0edba36b396bea5e1f52ea5a4e30a88104788e50b2
