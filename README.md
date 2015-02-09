@@ -31,7 +31,7 @@ You need three posix shells for this to properly work
 * A process to `cat '/tmp/logflume.conveyor.fifo'`
 * A shell/process to send SIG controls (INT,QUIT,TERM)
 
-### Worker.rb Source
+### `worker.rb` Source
 
 ```ruby
 #!/usr/bin/env ruby
@@ -53,12 +53,14 @@ flume.start
 gets
 ```
 
-### Example Worker Output 
+### Example `worker.rb` Output 
 
 ```shell
 $ ruby worker.rb 
 I, [2015-02-09T00:31:22.389096 #20712]  INFO -- : new File found => /home/shadowbq/sandbox/github-shadowbq/logflume/spec/data/flume/dpkg.log
 I, [2015-02-09T00:31:22.395498 #20712]  INFO -- : new File found => /home/shadowbq/sandbox/github-shadowbq/logflume/spec/data/flume/test.log
+(.. RCVR SIGQUIT see below ..)
+Terminating...
 ```
 
 ### Control Signal Hooks
@@ -69,16 +71,9 @@ $ kill -l
 
 $ ps aux |grep ruby
 shadowbq 20712  0.4  0.0 262508 14836 pts/0    Sl+  00:30   0:04 ruby worker.rb
-shadowbq 21373  0.0  0.0  18940   928 pts/13   S+   00:47   0:00 grep --color=auto ruby
+
 $ kill -3 20712
 ```
-
-### Example Output
-
-```shell
-Terminating...
-```
-
 
 ## LICENSE:
 
