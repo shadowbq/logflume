@@ -1,6 +1,7 @@
+require 'rubygems'
 require 'logger'
 require 'directory_watcher'
-#gem 'ruby-fifo'
+require 'mkfifo'
 require 'fifo'
 
 module Gravelpile

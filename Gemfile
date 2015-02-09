@@ -1,7 +1,12 @@
 source 'https://rubygems.org'
 
+gem 'mkfifo'
 gem 'ruby-fifo'
 gem 'directory_watcher'
+
+group :debug do
+  gem 'pry'
+end
 
 group :test do
   gem 'simplecov', '0.9.1'
