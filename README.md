@@ -8,7 +8,7 @@ A library to continually dump the contents of new logfiles into a POSIX FIFO pip
 ## Build Status
 
 [![Build Status](https://travis-ci.org/shadowbq/logflume.svg)](https://travis-ci.org/shadowbq/logflume)
-[![Code Climate](https://codeclimate.com/github/shadowbq/logflume/badges/gpa.svg)](https://codeclimate.com/github/shadowbq/logflume) 
+[![Code Climate](https://codeclimate.com/github/shadowbq/logflume/badges/gpa.svg)](https://codeclimate.com/github/shadowbq/logflume)
 [![Test Coverage](https://codeclimate.com/github/shadowbq/logflume/badges/coverage.svg)](https://codeclimate.com/github/shadowbq/logflume)
 [![GitHub tag](https://img.shields.io/github/tag/shadowbq/logflume.svg)](http://github.com/shadowbq/logflume)
 
@@ -23,7 +23,7 @@ A library to continually dump the contents of new logfiles into a POSIX FIFO pip
 
 ## EXAMPLE IMPLEMENTATION:
 
-This is a single blocking logflume. We can call this `worker.rb`. 
+This is a single blocking logflume. We can call this `worker.rb`.
 
 You need three posix shells for this to properly work
 
@@ -53,15 +53,38 @@ flume.start
 gets
 ```
 
-### Example `worker.rb` Output 
+### CAT - Dump the FIFO pipe
 
 ```shell
-$ ruby worker.rb 
+[shadowbq@fn-pound](~)$ cat /tmp/logflume.conveyor.fifo
+2015-02-04 13:17:16 startup archives unpack
+2015-02-04 13:17:16 install libjpeg-turbo-progs:amd64 <none> 1.3.0-0ubuntu2
+2015-02-04 13:17:16 status half-installed libjpeg-turbo-progs:amd64 1.3.0-0ubuntu2
+2015-02-04 13:17:17 status triggers-pending man-db:amd64 2.6.7.1-1ubuntu1
+2015-02-04 13:17:17 status unpacked libjpeg-turbo-progs:amd64 1.3.0-0ubuntu2
+2015-02-04 13:17:17 status unpacked libjpeg-turbo-progs:amd64 1.3.0-0ubuntu2
+2015-02-04 13:17:17 install libjpeg-progs:amd64 <none> 8c-2ubuntu8
+2015-02-04 13:17:17 status half-installed libjpeg-progs:amd64 8c-2ubuntu8
+2015-02-04 13:17:17 status unpacked libjpeg-progs:amd64 8c-2ubuntu8
+2015-02-04 13:17:17 status unpacked libjpeg-progs:amd64 8c-2ubuntu8
+2015-02-04 13:17:17 install jhead:amd64 <none> 1:2.97-1
+2015-02-04 13:17:17 status half-installed jhead:amd64 1:2.97-1
+2015-02-04 13:17:17 status unpacked jhead:amd64 1:2.97-1
+2015-02-04 13:17:17 status unpacked jhead:amd64 1:2.97-1
+2015-02-04 13:17:17 install libimage-exiftool-perl:all <none> 9.46-1
+```
+
+### Example `worker.rb` Output
+
+```shell
+$ ruby worker.rb
 I, [2015-02-09T00:31:22.389096 #20712]  INFO -- : new File found => /home/shadowbq/sandbox/github-shadowbq/logflume/spec/data/flume/dpkg.log
 I, [2015-02-09T00:31:22.395498 #20712]  INFO -- : new File found => /home/shadowbq/sandbox/github-shadowbq/logflume/spec/data/flume/test.log
 (.. RCVR SIGQUIT see below ..)
 Terminating...
 ```
+
+
 
 ### Control Signal Hooks
 
