@@ -98,6 +98,24 @@ shadowbq 20712  0.4  0.0 262508 14836 pts/0    Sl+  00:30   0:04 ruby worker.rb
 $ kill -3 20712
 ```
 
+## Troubleshooting
+
+If mkfifo gem fails to load:
+
+```ruby
+`rescue in <top (required)>': No such file to load, please install 'win32/pipe' or 'mkfifo' (LoadError)
+```
+
+check the permissions on the `lib` of the gems directory
+
+Ala..
+
+```shell
+sudo chmod a+rx /usr/local/lib/ruby/gems/2.0/gems/mkfifo-0.0.1/lib
+```
+
+
+
 ## LICENSE:
 
 (The MIT License)
