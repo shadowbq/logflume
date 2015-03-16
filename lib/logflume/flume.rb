@@ -95,7 +95,7 @@ module Logflume
     end
 
     def destroy_pipe
-      FileUtils.rm @pipe, :force => true 
+      ::FileUtils.rm @pipe, :force => true 
     end
 
   end
