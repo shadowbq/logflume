@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 1.9.3'
 
   s.add_dependency 'directory_watcher', '~> 1.5.1'
-  s.add_dependency 'mkfifo', '0.0.1'
+  s.add_dependency 'mkfifo', '>= 0.0.1'
   s.add_dependency 'ruby-fifo', '0.0.1'
 
   s.add_development_dependency 'pry'
