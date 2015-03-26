@@ -9,6 +9,12 @@ module Logflume
       @interval = opts[:interval] || 5.0
       @pre_load = opts[:pre_load] || false
       @blocking = opts[:blocking] || false
+      @prefix_syslog = opts[:prefix_syslog] || false
+      @syslog_sourceip = opts[:syslog_sourceip] || "127.0.0.1"
+      @syslog_facility = opts[:syslog_facility] || "local7"
+      @syslog_level = opts[:syslog_level] || "info"
+      @syslog_priority = opts[:syslog_priority] || "info"
+      @syslog_progname = opts[:syslog_progname] || "logflume"
       @pipe = opts[:pipe] || "/tmp/logflume.pipe.#{$$}"
       @configured = false
     end
@@ -65,29 +71,45 @@ module Logflume
     end
 
     def create_pipe
-      if @blocking 
+      if @blocking
         @pipe_handler = Fifo.new(@pipe, :w, :wait)
-      else  
+      else
         @pipe_handler = Fifo.new(@pipe)
       end
     end
 
     def hookup_pipe
-      @dw.add_observer  do |*args| 
-        args.each do |event| 
-          
+      @dw.add_observer  do |*args|
+        args.each do |event|
+
           if event.type == :added
             #root = File.dirname(__FILE__)
             #infile = File.join(root, event.path)
             #@logger.info "new File found => #{infile}"
             @logger.info "new File found => #{event.path}"
-            File.open(event.path).each_line do |line| 
-              @pipe_handler.puts line
+            if @prefix_syslog
+                File.open(event.path).each_line do |line|
+                  @pipe_handler.puts prefix + line
+                end
+            else
+                File.open(event.path).each_line do |line|
+                  @pipe_handler.puts line
+                end
             end
           end
 
         end
-      end 
+      end
+    end
+
+    def prefix
+        mytime = Time.now
+        #template("$SOURCEIP|$FACILITY|$PRIORITY|$LEVEL|$TAG|$YEAR-$MONTH-$DAY|$HOUR:$MIN:$SEC|$PROGRAM| $MSG\n")
+        #@syslog_priority = @syslog_facility * 8 + @syslog_severity
+        ymd = a.strftime("%Y-%M-%d")
+        hms = a.strftime("%H:%m:%S")
+        @tag = "logflume"
+        return "#{@syslog_sourceip}|#{@syslog_facility}|#{@syslog_priority}|#{@syslog_level}|#{@tag}|#{ymd}|#{hms}|#{@syslog_progname}| "
     end
 
     def directory_exists?(directory)
@@ -95,8 +117,21 @@ module Logflume
     end
 
     def destroy_pipe
-      ::FileUtils.rm @pipe, :force => true 
+      ::FileUtils.rm @pipe, :force => true
     end
+
+    # Borrowed from SyslogLogger.
+    def clean(message)
+      message = message.to_s.dup
+      message.strip! # remove whitespace
+      message.gsub!(/\n/, '\\n') # escape newlines
+      message.gsub!(/%/, '%%') # syslog(3) freaks on % (printf)
+      message.gsub!(/\e\[[^m]*m/, '') # remove useless ansi color codes
+      message
+    end
+
+    formatted_communication = formatter.call([severity], Time.now, progname, clean(message)
+    s.log(MAPPING[severity],"#{tags_text}#{formatted_communication}")
 
   end
 end
