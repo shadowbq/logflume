@@ -130,8 +130,5 @@ module Logflume
       message
     end
 
-    formatted_communication = formatter.call([severity], Time.now, progname, clean(message)
-    s.log(MAPPING[severity],"#{tags_text}#{formatted_communication}")
-
   end
 end
