@@ -106,8 +106,8 @@ module Logflume
         mytime = Time.now
         #template("$SOURCEIP|$FACILITY|$PRIORITY|$LEVEL|$TAG|$YEAR-$MONTH-$DAY|$HOUR:$MIN:$SEC|$PROGRAM| $MSG\n")
         #@syslog_priority = @syslog_facility * 8 + @syslog_severity
-        ymd = mytime.strftime("%Y-%M-%d")
-        hms = mytime.strftime("%H:%m:%S")
+        ymd = mytime.strftime("%Y-%m-%d")
+        hms = mytime.strftime("%H:%M:%S")
         @tag = "logflume"
         return "#{@syslog_sourceip}|#{@syslog_facility}|#{@syslog_priority}|#{@syslog_level}|#{@tag}|#{ymd}|#{hms}|#{@syslog_progname}| "
     end
