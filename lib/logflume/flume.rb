@@ -1,6 +1,6 @@
 module Logflume
   class Flume
-    attr_accessor :dir, :glob, :logger, :pipe, :pre_load, :interval, :blocking
+    attr_accessor :dir, :glob, :logger, :pipe, :pre_load, :interval, :blocking, :prefix_syslog, :syslog_sourceip, :syslog_level, :syslog_facility, :syslog_priority, :syslog_progname, :syslog_severity
 
     def initialize(opts = {})
       @dir = opts[:dir] || './flume/'
