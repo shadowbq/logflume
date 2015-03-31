@@ -12,9 +12,33 @@ describe Logflume do
     flume.shutdown
   end
 
+  it 'handles fifo pipes' do
+    flume = Logflume::Flume.new
+    flume.dir='spec/data/flume'
+    flume.glob='*.log'
+    flume.pipe="/tmp/tmp.flume.#{$$}.fifo"
+    flume.logger = Logger.new('/dev/null')
+    expect(flume.start.class.to_s).to eq 'DirectoryWatcher'
+    flume.shutdown
+  end
+
+  it 'prepends syslog when instructed when making a pipe' do
+    flume = Logflume::Flume.new
+    flume.dir='spec/data/flume'
+    flume.glob='*.log'
+    flume.pipe="/tmp/tmp.flume.#{$$}.fifo"
+    flume.logger = Logger.new('/dev/null')
+    flume.prefix_syslog=true
+    flume.syslog_progname="dpkg"
+    #flume.blocking = true
+    expect(flume.start.class.to_s).to eq 'DirectoryWatcher'
+    sleep(10) ## We need to ba able to catch PROC errors here.. 
+    flume.shutdown
+  end
+
   it 'should raise an InvalidDirectory Error' do
     flume = Logflume::Flume.new
-    flume.dir='spec/data/flumex'
+    flume.dir='spec/data/missingdirectory'
     flume.glob='*.log'
     expect{flume.start}.to raise_error(Logflume::InvalidDirectory)
   end
@@ -27,7 +51,7 @@ describe Logflume do
     flume.start
     #FileUtils.touch('spec/data/flume/test.log')
     expect(flume.shutdown).to eq true
-    
+
   end
 
 end
