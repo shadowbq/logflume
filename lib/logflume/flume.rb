@@ -63,9 +63,11 @@ module Logflume
     def _register_signal_hooks
       [:INT, :QUIT, :TERM].each do |signal|
         ::Signal.trap(signal) do
-          puts "Terminating..."
-          self.shutdown
-          exit
+            Thread.new do
+              puts "Terminating..."
+              self.shutdown
+            end
+            exit
         end
       end
     end
