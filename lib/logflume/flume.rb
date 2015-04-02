@@ -1,6 +1,6 @@
 module Logflume
   class Flume
-    attr_accessor :dir, :glob, :logger, :pipe, :pre_load, :interval, :blocking, :prefix_syslog, :syslog_sourceip, :syslog_level, :syslog_facility, :syslog_priority, :syslog_progname, :syslog_severity
+    attr_accessor :dir, :glob, :logger, :pipe, :pre_load, :interval, :blocking, :prefix_syslog, :syslog_sourceip, :syslog_level, :syslog_facility, :syslog_priority, :syslog_progname, :syslog_severity, :shift, :bookmark
 
     def initialize(opts = {})
       @dir = opts[:dir] || './flume/'
@@ -9,6 +9,8 @@ module Logflume
       @interval = opts[:interval] || 5.0
       @pre_load = opts[:pre_load] || false
       @blocking = opts[:blocking] || false
+      @bookmark = opts[:bookmark] || false
+      @shift = opts[:shift] || false
       @prefix_syslog = opts[:prefix_syslog] || false
       @syslog_sourceip = opts[:syslog_sourceip] || "127.0.0.1"
       @syslog_facility = opts[:syslog_facility] || "local7"
@@ -25,7 +27,11 @@ module Logflume
 
     def load
       raise InvalidDirectory unless directory_exists?(@dir)
+      if @shift
+          raise InvalidShiftDirectory unless directory_exists?(@shift)
+      end
       @dw = DirectoryWatcher.new(@dir, :glob => @glob, :logger => @logger, :interval => @interval, :pre_load => @pre_load)
+      @dw.persist = @bookmark if @bookmark
       @configured = true unless @dw.nil?
       route_pipe
     end
@@ -45,7 +51,7 @@ module Logflume
     end
 
     def shutdown
-      @dw.stop ? @dw.running? : false
+      running? ? stop : true
       @dw = nil
       @configure = false
       destroy_pipe
@@ -81,11 +87,7 @@ module Logflume
     def hookup_pipe
       @dw.add_observer  do |*args|
         args.each do |event|
-
           if event.type == :added
-            #root = File.dirname(__FILE__)
-            #infile = File.join(root, event.path)
-            #@logger.info "new File found => #{infile}"
             @logger.info "new File found => #{event.path}"
             if @prefix_syslog
                 File.open(event.path).each_line do |line|
@@ -95,6 +97,10 @@ module Logflume
                 File.open(event.path).each_line do |line|
                   @pipe_handler.puts line
                 end
+            end
+            if @shift
+                @logger.info "shift # " + event.path + " -> " + @shift + '/' + File.basename(event.path)
+                File.rename(event.path, @shift + '/' + File.basename(event.path))
             end
           end
 
