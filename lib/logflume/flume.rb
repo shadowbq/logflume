@@ -1,6 +1,6 @@
 module Logflume
   class Flume
-    attr_accessor :dir, :glob, :logger, :pipe, :pre_load, :interval, :blocking, :prefix_syslog, :syslog_sourceip, :syslog_level, :syslog_facility, :syslog_priority, :syslog_progname, :syslog_severity, :shift, :bookmark
+    attr_accessor :dir, :glob, :logger, :pipe, :pre_load, :interval, :blocking, :prefix_syslog, :syslog_sourceip, :syslog_level, :syslog_facility, :syslog_priority, :syslog_progname, :syslog_severity, :shift, :bookmark, :pipe_persist
 
     def initialize(opts = {})
       @dir = opts[:dir] || './flume/'
@@ -18,6 +18,7 @@ module Logflume
       @syslog_priority = opts[:syslog_priority] || "info"
       @syslog_progname = opts[:syslog_progname] || "logflume"
       @pipe = opts[:pipe] || "/tmp/logflume.pipe.#{$$}"
+      @pipe_persist = opts[:pipe_persist] || false
       @configured = false
     end
 
@@ -54,7 +55,7 @@ module Logflume
       running? ? stop : true
       @dw = nil
       @configure = false
-      _destroy_pipe
+      _destroy_pipe unless @pipe_persist
       true
     end
 
@@ -63,10 +64,8 @@ module Logflume
     def _register_signal_hooks
       [:INT, :QUIT, :TERM].each do |signal|
         ::Signal.trap(signal) do
-            Thread.new do
-              puts "Terminating..."
-              self.shutdown
-            end
+            puts "Terminating..."
+            self.shutdown
             exit
         end
       end
