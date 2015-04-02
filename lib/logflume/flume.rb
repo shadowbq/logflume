@@ -26,19 +26,19 @@ module Logflume
     end
 
     def load
-      raise InvalidDirectory unless directory_exists?(@dir)
+      raise InvalidDirectory unless _directory_exists?(@dir)
       if @shift
-          raise InvalidShiftDirectory unless directory_exists?(@shift)
+          raise InvalidShiftDirectory unless _directory_exists?(@shift)
       end
       @dw = DirectoryWatcher.new(@dir, :glob => @glob, :logger => @logger, :interval => @interval, :pre_load => @pre_load)
       @dw.persist = @bookmark if @bookmark
       @configured = true unless @dw.nil?
-      route_pipe
+      _route_pipe
     end
 
     def start
       load unless configured?
-      register_signal_hooks
+      _register_signal_hooks
       @dw.start
     end
 
@@ -54,13 +54,13 @@ module Logflume
       running? ? stop : true
       @dw = nil
       @configure = false
-      destroy_pipe
+      _destroy_pipe
       true
     end
 
     private
 
-    def register_signal_hooks
+    def _register_signal_hooks
       [:INT, :QUIT, :TERM].each do |signal|
         ::Signal.trap(signal) do
           puts "Terminating..."
@@ -70,13 +70,13 @@ module Logflume
       end
     end
 
-    def route_pipe
+    def _route_pipe
       raise FlumeNotLoaded unless configured?
-      create_pipe
-      hookup_pipe
+      _create_pipe
+      _hookup_pipe
     end
 
-    def create_pipe
+    def _create_pipe
       if @blocking
         @pipe_handler = Fifo.new(@pipe, :w, :wait)
       else
@@ -84,31 +84,47 @@ module Logflume
       end
     end
 
-    def hookup_pipe
+    def _hookup_pipe
       @dw.add_observer  do |*args|
         args.each do |event|
           if event.type == :added
             @logger.info "new File found => #{event.path}"
-            if @prefix_syslog
-                File.open(event.path).each_line do |line|
-                  @pipe_handler.puts prefix + line
-                end
-            else
-                File.open(event.path).each_line do |line|
-                  @pipe_handler.puts line
-                end
-            end
-            if @shift
-                @logger.info "shift # " + event.path + " -> " + @shift + '/' + File.basename(event.path)
-                File.rename(event.path, @shift + '/' + File.basename(event.path))
-            end
+            _print(event.path)
+            _shift(event.path) if @shift
           end
 
         end
       end
     end
 
-    def prefix
+    def _destroy_pipe
+      ::FileUtils.rm @pipe, :force => true
+    end
+
+    def _directory_exists?(directory)
+      File.directory?(directory)
+    end
+
+    def _print(event_file)
+        if @prefix_syslog
+            File.open(event_file).each_line do |line|
+              @pipe_handler.puts _prefix + line
+            end
+        else
+            File.open(event_file).each_line do |line|
+              @pipe_handler.puts line
+            end
+        end
+    end
+
+    def _shift(event_file)
+        if @shift
+            @logger.info "shift # " + event_file + " -> " + @shift + '/' + File.basename(event_file)
+            File.rename(event_file, @shift + '/' + File.basename(event_file))
+        end
+    end
+
+    def _prefix
         mytime = Time.now
         #template("$SOURCEIP|$FACILITY|$PRIORITY|$LEVEL|$TAG|$YEAR-$MONTH-$DAY|$HOUR:$MIN:$SEC|$PROGRAM| $MSG\n")
         #@syslog_priority = @syslog_facility * 8 + @syslog_severity
@@ -118,16 +134,8 @@ module Logflume
         return "#{@syslog_sourceip}|#{@syslog_facility}|#{@syslog_priority}|#{@syslog_level}|#{@tag}|#{ymd}|#{hms}|#{@syslog_progname}| "
     end
 
-    def directory_exists?(directory)
-      File.directory?(directory)
-    end
-
-    def destroy_pipe
-      ::FileUtils.rm @pipe, :force => true
-    end
-
     # Borrowed from SyslogLogger.
-    def clean(message)
+    def _clean(message)
       message = message.to_s.dup
       message.strip! # remove whitespace
       message.gsub!(/\n/, '\\n') # escape newlines
